@@ -1,83 +1,132 @@
 import pygame
 import random
 
+SIZE = 20  # block size
+INITIAL_X = 450
+INITIAL_Y = 150
+
+
 class Grid:
-    def __init__(self, x, y, cordinates=[], SIZE=20, color=(255, 255, 255)) -> None:
+
+    def __init__(self, x=INITIAL_X, y=INITIAL_Y, color=(255, 255, 255)) -> None:
         self.rect = pygame.Rect(x, y, SIZE, SIZE)
         self.color = color
         self.size = SIZE
-        # self.cordinates = cordinates
         return None
+
     def draw(self, screen) -> None:
         for i in range(20):
-            self.rect.y = 150
+            self.rect.y = INITIAL_Y
             self.rect.x += self.size
             for j in range(20):
                 self.rect.y += self.size
                 pygame.draw.rect(screen, self.color, self.rect, 1)
-                # self.cordinates.append([self.rect.x, self.rect.y])
-                # print(f"Block Position: ({self.rect.x}, {self.rect.y})")
-        # print(f"Length is {len(self.cordinates)} \n")
-        # print(self.cordinates)
-        # print('\n')
         return None
+
     def refresh(self, x, y) -> None:
         # self.cordinates = []
         self.rect.x = x
         self.rect.y = y
         return None
-    def cordinates(self) -> list:
-        #return self.cordinates
-        pass
+
 
 class Snake:
-    def __init__(self, cordinates, SIZE=20, color=(0, 255, 0)) -> None:
-        try:
-            assert len(cordinates) == 200
-        except:
-            # print(cordinates)
-            # print(len(cordinates))
-            pass
-        self.cordinates = cordinates
-        self.rect = pygame.Rect(cordinates[200][0], cordinates[200][1], SIZE, SIZE)  # Define the player as a rectangle
+
+    def __init__(self, color=(0, 255, 0)) -> None:
+        # Define the player as a rectangle
+        self.rect = pygame.Rect(650, 350, SIZE, SIZE)
         self.color = color  # Set the color of the player
         self.size = SIZE
-        self.body = []
+        self.speed = pygame.Vector2(0, 1)
+        self.tail = []
 
     def move(self):
-        self.rect.x += 20  # Move left
+        self.rect.x += self.speed.x * SIZE
+        self.rect.y += self.speed.y * SIZE
 
-    def grow(self):
-        # add additional unit to the end of the snake body
+    def velocity(self, x, y):
+        self.speed.x = x
+        self.speed.y = y
+
+    def get_rect(self):
+        return self.rect
+
+    def grow(self, seg):
+        self.tail.append(seg)
         pass
 
-    def collisions():
-        pass
+    def move_tail(self):
+        
+        if not self.tail:
+            return None
+
+        for i in range(len(self.tail)-1, 0, -1):
+            self.tail[i].move(self.tail[i-1].get_rect().x,
+                              self.tail[i-1].get_rect().y)
+
+        self.tail[0].move(self.rect.x, self.rect.y)
+
+    def get_tail(self):
+        return self.tail
+
+    def collisions(self):
+        for seg in self.tail:
+            if (self.rect.x, self.rect.y) == (seg.get_rect().x, seg.get_rect().y):
+                return True
+
+        if self.rect.x < INITIAL_X + 20 or self.rect.x > INITIAL_X + 400:
+            return True
+
+        if self.rect.y < INITIAL_Y + 20 or self.rect.y > INITIAL_Y + 400:
+            return True
+
+        return False
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, self.rect)  # Draw the player on the screen
+        # Draw the player on the screen
+        pygame.draw.rect(screen, self.color, self.rect)
+        for seg in self.tail:
+            # add functionality for drawing the body of the snake
+            pygame.draw.rect(screen, self.color, seg)
+
+    def get_position(self):
+        return self.rect.x, self.rect.y
+
+    def get_velocity(self):
+        return (self.speed.x, self.speed.y)
+
+
+class Tail:
+    def __init__(self, x, y) -> None:
+        self.rect = pygame.Rect(x, y, SIZE, SIZE)
+        pass
+
+    def get_rect(self):
+        return self.rect
+
+    def move(self, x, y):
+        self.rect.x = x
+        self.rect.y = y
+
 
 class Apple:
-    def __init__(self, x, y, SIZE=20, color=(255, 0, 0)) -> None:
-        self.rect = pygame.Rect(x, y, SIZE, SIZE)
+
+    def __init__(self, color=(255, 0, 0)) -> None:
+        self.rect = pygame.Rect(750, 250, SIZE, SIZE)
         self.color = color
-    def respawn(self):
-        #set x, y cordinates to a random number between 0 and 19
-        #set x and y to start_x, start_y + 20*x or 20*y
         pass
+
+    def respawn(self):
+        # TODO: Fix respawn mechanic so that apple does not spawn in a location with a tail body present
+        x = random.randint(1, 19)
+        y = random.randint(1, 19)
+        self.rect.x = (20 * x) + INITIAL_X
+        self.rect.y = (20 * y) + INITIAL_Y
+        pass
+
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, self.rect)  # Draw the player on the screen
+        # Draw the apple on the screen
+        pygame.draw.rect(screen, self.color, self.rect)
 
-#movement logic
-    #snake starts with movement vector (5, 0)
-    #what is an elegent way to say that we are not allowed to flip position i.e cannot go up then down?
-    #we could just save a state representaiton and then work off of that as a direction string
-    #The move function is continously called however and a key press only changes that direction
-    #If up then (0, 1)
-    #if down then (0, -1)
-    #if left then (-1, 0)
-    # if right the (1, 0)
-
-
-# How do i make it so that abjects only move within the confines of the grid?
-# Save rect cordinates as an array to move through 
+    def get_position(self):
+        return self.rect.x, self.rect.y
