@@ -4,7 +4,7 @@ import random
 SIZE = 20  # block size
 INITIAL_X = 450
 INITIAL_Y = 150
-
+GRID_LENGTH = 400
 
 class Grid:
 
@@ -74,10 +74,10 @@ class Snake:
             if (self.rect.x, self.rect.y) == (seg.get_rect().x, seg.get_rect().y):
                 return True
 
-        if self.rect.x < INITIAL_X + 20 or self.rect.x > INITIAL_X + 400:
+        if self.rect.x < INITIAL_X + 20 or self.rect.x > INITIAL_X + GRID_LENGTH:
             return True
 
-        if self.rect.y < INITIAL_Y + 20 or self.rect.y > INITIAL_Y + 400:
+        if self.rect.y < INITIAL_Y + 20 or self.rect.y > INITIAL_Y + GRID_LENGTH:
             return True
 
         return False
